@@ -3,7 +3,7 @@
 Учебный RAG на текстовых описаниях: TF-IDF + demo-ответ с источниками.  
 Pipeline: данные → чанки → индекс → поиск → ответ.
 
-**Документы разработки:** [doc/tasklist.md](doc/tasklist.md) · **Данные:** [doc/DATA.md](doc/DATA.md) · **Домашнее задание:** [homework/README.md](homework/README.md) · **Слайды:** [Seminar_Big_data.pptx](Seminar_Big_data.pptx) · **Kaggle:** [Consumer Complaint Database](https://www.kaggle.com/datasets/datasnaek/consumer-complaint-database)
+**Документы разработки:** [doc/tasklist.md](doc/tasklist.md) · **Данные:** [doc/DATA.md](doc/DATA.md) · **Домашнее задание:** [homework/README.md](homework/README.md) · **Слайды:** [Seminar_Big_data.pdf](Seminar_Big_data.pdf) · **Kaggle:** [Consumer Complaint Database](https://www.kaggle.com/datasets/datasnaek/consumer-complaint-database)
 
 ## Требования
 
@@ -91,5 +91,4 @@ uv run python scripts/build_index.py
 - Индексируется только текст описаний, CSV не используется.
 
 ## Контакты
-Телеграм: @marat_ufa_kilop
 Подписывайтесь на канал: @Marat_notes
