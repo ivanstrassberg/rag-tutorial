@@ -2,6 +2,8 @@
 
 Документ описывает, **какие данные** использует учебный RAG, **откуда** они взяты и **что именно** попадает в индекс.
 
+**Автор:** Силин Иван Андреевич
+
 ---
 
 ## Назначение репозитория
@@ -13,17 +15,14 @@
 - полный offline-pipeline: сырые данные → документы → чанки → TF-IDF индекс → поиск → demo-ответ;
 - ответ **только по найденным фрагментам** с указанием источника (`doc_id`, score);
 - явный **отказ**, если релевантного контекста нет;
-- Streamlit UI для интерактивной проверки.
+- Streamlit UI для интерактивной проверки на реальном корпусе из 1500 отзывов.
 
 **Границы MVP:**
 
-- поиск по **слова**м (TF-IDF), не embeddings и не LLM;
+- поиск по **словам** (TF-IDF), не embeddings и не LLM;
 - demo-режим без внешних API;
-- небольшой локальный корпус (9 документов, ~29 чанков);
-- не production-система, а **учебный шаблон** для повторения на своих данных.
-
-Идея продукта изначально — описания **экономических датасетов Kaggle** (см. [00_project_idea.md](00_project_idea.md)).  
-В текущем MVP в качестве демо-корпуса используются **русскоязычные тексты жалоб CFPB** — структура pipeline та же, данные проще получить и воспроизвести локально.
+- корпус: **1500 отзывов** → **1597 чанков** после нарезки;
+- не production-система, а **учебный RAG** на открытых данных Amazon.
 
 ---
 
@@ -31,17 +30,13 @@
 
 | Источник | Файл в проекте | Комментарий |
 |----------|----------------|-------------|
-| [CFPB Consumer Complaint Database](https://www.consumerfinance.gov/data-research/consumer-complaints/) | `data/raw/rows.csv` | Скачивается локально (Kaggle или официальный архив CFPB). **Не коммитится** — см. `.gitignore`. |
-| Подготовленный корпус | `data/raw/datasets.json` | 9 записей: `id`, `name`, `text` (на русском). **Коммитится** — готовый демо-набор. |
-| Скрипт подготовки | `scripts/prepare_datasets.py` | Выборка из `rows.csv` + ручные переводы в `TRANSLATIONS`. |
+| [Amazon Electronics Reviews (Kaggle)](https://www.kaggle.com/datasets/datafiniti/consumer-reviews-of-amazon-products) | `data/raw/1429_1.csv` | Сырой CSV (~41k строк). **Не коммитится** — см. `.gitignore`. |
+| Подготовленный корпус | `data/raw/datasets.json` | 1500 записей: `id`, `name` (заголовок отзыва), `text`. **Коммитится**. |
+| Скрипт подготовки | `data/raw/extract.py` | Извлекает `reviews.title`, `reviews.text` → первые 1500 валидных отзывов |
 
-**Kaggle:** [Consumer Complaint Database (CFPB)](https://www.kaggle.com/datasets/datasnaek/consumer-complaint-database) — типичная точка входа для скачивания `rows.csv`.
+**Лицензия:** открытые данные с Kaggle; уточняйте условия на странице датасета при скачивании.
 
-**Лицензия:** данные CFPB — открытые данные правительства США (public domain / open government data).  
-Уточняйте актуальные условия на [consumerfinance.gov](https://www.consumerfinance.gov/data-research/consumer-complaints/) и на странице датасета Kaggle при скачивании.
-
-**Дата выгрузки / подготовки:** подготовлено для учебного репозитория, **май 2026**.  
-При пересборке `datasets.json` из свежего `rows.csv` дата и состав записей могут отличаться.
+**Дата подготовки:** июнь 2026.
 
 ---
 
@@ -50,18 +45,19 @@
 | Поле / артефакт | Индексируется? | Где используется |
 |-----------------|:--------------:|------------------|
 | `text` из `datasets.json` | **Да** | TF-IDF матрица, поиск, demo-ответ |
-| `name` | Нет (метаданные) | UI, источники — подпись документа |
+| `name` (заголовок отзыва) | Нет (метаданные) | UI, источники — подпись документа |
 | `doc_id` | Нет (метаданные) | UI, источники — идентификатор записи |
 | `source_file` | Нет | `documents.jsonl`, трассировка происхождения |
 
 **Pipeline:**
 
 ```
-datasets.json → documents.jsonl → chunks.jsonl → vectorizer.pkl + matrix.npz
+1429_1.csv → extract.py → datasets.json → documents.jsonl → chunks.jsonl → vectorizer.pkl + matrix.npz
 ```
 
 - **Чанки:** нарезка по абзацам, max 400 символов, overlap 50 (`app/chunker.py`).
 - **Поиск:** cosine similarity по TF-IDF векторам (`app/retriever.py`).
+- **Индекс:** 1597 чанков × 3081 признак (после `build_index.py`).
 
 ---
 
@@ -69,8 +65,8 @@ datasets.json → documents.jsonl → chunks.jsonl → vectorizer.pkl + matrix.n
 
 | Не индексируется | Причина |
 |------------------|---------|
-| `data/raw/rows.csv` | Сырой CSV CFPB — только для локальной подготовки `datasets.json` |
-| CSV-файлы Kaggle | MVP работает с текстом описаний, не с табличным анализом |
+| `data/raw/1429_1.csv` | Сырой CSV — только для локальной подготовки `datasets.json` |
+| `reviews.rating`, `brand`, `categories` и др. | MVP работает с текстом отзывов, не с табличными полями |
 | Kaggle API | Не используется в runtime |
 | Секреты, API-ключи | Demo-режим без внешних LLM |
 | `data/processed/*.jsonl` | Промежуточные артефакты, генерируются скриптами |
@@ -78,39 +74,38 @@ datasets.json → documents.jsonl → chunks.jsonl → vectorizer.pkl + matrix.n
 
 ---
 
-## Состав демо-корпуса
+## Состав корпуса
 
-9 документов (`doc_id` 0…8), темы — финансовые жалобы потребителей (CFPB):
+1500 отзывов на продукт **Amazon Fire HD 8 Tablet** (английский язык).
 
-| doc_id | Тема (кратко) |
-|--------|----------------|
-| 0 | Взыскание долга |
-| 1 | Студенческий кредит |
-| 2 | Ипотека (Citibank) |
-| 3 | Кредитная / предоплаченная карта |
-| 4 | Расчётный счёт (Wells Fargo) |
-| 5 | Денежный перевод (Xoom) |
-| 6 | Краткосрочный займ |
-| 7 | Кредитная карта (Capital One) |
-| 8 | Банковский счёт (U.S. Bank) |
+Типичные темы в отзывах:
 
-**Рабочий demo-запрос в UI:** «Ипотека - закрытие ипотечной сделки» → `doc_id=2`.
+| Тема | Примеры слов в тексте |
+|------|----------------------|
+| Prime / контент | Prime Members, movies, download |
+| Дети / parental controls | kids, children, age, content |
+| Чтение / e-reader | reading, books, Kindle |
+| Батарея | battery life |
+| Цена / value | great value, price |
 
-**Запросы про безработицу / инфляцию** дают отказ — таких тем в корпусе нет (это ожидаемое поведение для negative-case).
+**Рабочие demo-запросы в UI:**
+
+- «Prime Members tablet movies content» → ответ с score > 0.15
+- «battery life fire tablet» → отзывы про battery
+- «quantum physics relativity» → **отказ** (negative-case)
 
 ---
 
 ## Как обновить данные
 
-1. Скачать `rows.csv` с Kaggle / CFPB локально в `data/raw/`.
-2. При необходимости обновить переводы в `scripts/prepare_datasets.py`.
-3. Запустить: `uv run python scripts/prepare_datasets.py`
-4. Пересобрать индекс: `uv run python scripts/build_index.py`
+1. Скачать `1429_1.csv` с Kaggle в `data/raw/`.
+2. Запустить: `python data/raw/extract.py` (или адаптировать лимит в скрипте).
+3. Пересобрать индекс: `uv run python scripts/build_index.py`
 
 ---
 
 ## Связанные документы
 
-- [00_project_idea.md](00_project_idea.md) — идея и целевые данные Kaggle
+- [00_project_idea.md](00_project_idea.md) — идея проекта
 - [vision.md](vision.md) — стек и границы MVP
 - [tasklist.md](tasklist.md) — итерационный план

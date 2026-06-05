@@ -1,14 +1,14 @@
-# RAG Tutorial
+# Amazon Reviews RAG
 
-Учебный RAG на текстовых описаниях: TF-IDF + demo-ответ с источниками.  
+Учебный RAG на отзывах Amazon Fire HD 8: TF-IDF + demo-ответ с источниками.  
 Pipeline: данные → чанки → индекс → поиск → ответ.
 
-**Документы разработки:** [doc/tasklist.md](doc/tasklist.md) · **Данные:** [doc/DATA.md](doc/DATA.md) · **Домашнее задание:** [homework/README.md](homework/README.md) · **Слайды:** [Seminar_Big_data.pdf](Seminar_Big_data.pdf) · **Kaggle:** [Consumer Complaint Database](https://www.kaggle.com/datasets/datasnaek/consumer-complaint-database)
+**Автор:** Силин Иван Андреевич · **Данные:** [doc/DATA.md](doc/DATA.md) · **Домашнее задание:** [homework/SUBMISSION.md](homework/SUBMISSION.md)
 
 ## Требования
 
 - Python 3.10+
-- [uv](https://docs.astral.sh/uv/)
+- [uv](https://docs.astral.sh/uv/) (или `python3 -m venv .venv`)
 
 ## Быстрый старт
 
@@ -18,38 +18,54 @@ uv venv
 uv sync
 
 # 2. Сборка индекса (ingest + chunk + TF-IDF)
-uv run python scripts/build_index.py
+uv run python scripts/build_index.py (или как fallback: python scripts/build_index.py )
 
 # 3. Запуск UI
-uv run streamlit run app/main.py
+uv run streamlit run app/main.py (или как fallback: streamlit run app/main.py)
 ```
 
-Откройте в браузере: http://localhost:8501
+Откройте в браузере: [http://localhost:8501](http://localhost:8501)
+
+## Данные
+
+- **Источник:** [Amazon Consumer Reviews](https://www.kaggle.com/datasets/datafiniti/consumer-reviews-of-amazon-products) (выборка из `1429_1.csv`)
+- **Корпус:** 1500 отзывов → 1597 чанков после нарезки
+- **Подготовка:** `data/raw/extract.py` → `data/raw/datasets.json`
 
 ## Demo-вопросы
 
 В sidebar приложения или в поле ввода:
 
-| Вопрос | Ожидание |
-|--------|----------|
-| **Ипотека - закрытие ипотечной сделки** | ответ, doc_id=2, score > 0.4 |
-| Какие переменные в датасете про безработицу? | отказ (нет таких данных) |
-| За какой период данные об инфляции? | отказ |
-| Как приготовить борщ? | отказ |
 
-Другие рабочие запросы: `студенческий кредит`, `Capital One`, `Wells Fargo закрытие счёта`.
+| Вопрос                                      | Ожидание                                    |
+| ------------------------------------------- | ------------------------------------------- |
+| **Prime Members tablet movies content**     | ответ с источниками, score > 0.15           |
+| **great tablet for kids parental controls** | ответ про детский режим / parental controls |
+| **battery life fire tablet**                | ответ про battery life                      |
+| **quantum physics relativity**              | отказ (нет релевантных фрагментов)          |
 
-## Проверка из консоли
+
+Другие рабочие запросы: `e-reader reading books`, `SD card storage`, `Skype video call`.
+
+### Проверка из консоли (логи)
 
 ```bash
-# Тесты
-uv run pytest tests/ -v
-
-# Поиск (итерация 5)
 uv run python scripts/check_retrieval.py
-
-# Demo-ответ (итерация 6)
 uv run python scripts/check_generator.py
+```
+
+Пример вывода `check_generator.py` для negative-вопроса:
+
+```
+--- Negative: «quantum physics relativity» ---
+Ответ:
+В базе не найдено релевантных фрагментов. Ответить по данным невозможно.
+```
+
+## Тесты
+
+```bash
+uv run pytest tests/ -v
 ```
 
 ## Структура проекта
@@ -69,9 +85,11 @@ rag-tutorial/
 │   ├── check_retrieval.py
 │   └── check_generator.py
 ├── data/
-│   ├── raw/datasets.json
-│   ├── processed/      # documents.jsonl, chunks.jsonl (генерируются)
-│   └── index/          # vectorizer.pkl, matrix.npz (генерируются)
+│   ├── raw/
+│   │   ├── datasets.json   # 1500 отзывов (коммитится)
+│   │   └── extract.py      # подготовка из CSV
+│   ├── processed/          # documents.jsonl, chunks.jsonl (генерируются)
+│   └── index/              # vectorizer.pkl, matrix.npz (генерируются)
 ├── tests/
 └── doc/
 ```
@@ -88,7 +106,18 @@ uv run python scripts/build_index.py
 
 - Поиск по **словам** (TF-IDF), не по смыслу — синонимы могут не находиться.
 - Demo-режим: ответ из найденных чанков, без внешней LLM.
-- Индексируется только текст описаний, CSV не используется.
+- Индексируется только текст отзывов, сырой CSV не используется в runtime.
 
-## Контакты
-Подписывайтесь на канал: @Marat_notes
+## Улучшения
+
+См. [homework/STUDENT_IMPROVEMENTS.md](homework/STUDENT_IMPROVEMENTS.md).
+
+## Скриншоты
+
+**Релевантный запрос** — «Prime Members tablet movies content»: найдены фрагменты с `doc_id` и `score`, ответ собран из источников.
+
+Релевантный запрос: Prime Members
+
+**Negative-запрос** — «quantum physics relativity»: релевантных фрагментов нет, система отказывается отвечать.
+
+Negative-запрос: отказ

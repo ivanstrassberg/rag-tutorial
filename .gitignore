@@ -14,7 +14,10 @@ build/
 
 # Сырые данные (скачиваются с Kaggle локально)
 data/raw/rows.csv
+data/raw/1429_1.csv
+data/raw/reviews_1500.csv
 data/raw/archive.zip
+data/processed/datasets.json
 
 # Артефакты pipeline (генерируются скриптами)
 data/index/

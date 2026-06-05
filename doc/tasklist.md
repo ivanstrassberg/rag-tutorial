@@ -46,8 +46,8 @@ uv run python -c "import app.config"
 
 ## Итерация 1 — Демо-данные Kaggle
 
-- [x] `data/raw/datasets.json` — 9 жалоб CFPB (из `rows.csv`)
-- [x] Поля: `id` (номер записи 0…n), `name`, `text` (на русском)
+- [x] `data/raw/datasets.json` (из `reviews_1500.csv`)
+- [x] Поля: `id` (номер записи 0…n), `name`, `text` (на английском)
 - [x] `data/raw/rows.csv` в `.gitignore` (скачивается локально с Kaggle)
 
 **Проверка:**

@@ -1,7 +1,7 @@
 [project]
 name = "rag-tutorial"
 version = "0.1.0"
-description = "Учебный RAG на описаниях экономических датасетов Kaggle"
+description = "Учебный RAG на отзывах Amazon Fire HD 8"
 requires-python = ">=3.10"
 dependencies = [
     "streamlit",

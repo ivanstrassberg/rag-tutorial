@@ -13,6 +13,6 @@ def show(label: str, question: str) -> None:
 
 
 if __name__ == "__main__":
-    show("Есть контекст", "ипотека ставка Citibank")
-    show("Нет контекста", "безработица переменные")
-    show("Negative", "Как приготовить борщ?")
+    show("Есть контекст", "Prime Members tablet movies content")
+    show("Есть контекст 2", "battery life fire tablet")
+    show("Negative", "quantum physics relativity")

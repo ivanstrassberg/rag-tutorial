@@ -16,8 +16,8 @@ def main() -> None:
     print("OK: индекс загружен (vectorizer.pkl + matrix.npz + chunks.jsonl)\n")
 
     queries = [
-        ("ипотека ставка", "слова есть в данных -> score > 0, doc_id=2 (Citibank)"),
-        ("безработица переменные", "слов нет в данных -> score=0, но top-k все равно возвращается"),
+        ("battery life fire tablet", "слова есть в отзывах -> score > 0"),
+        ("quantum physics relativity", "слов нет в данных -> score=0, но top-k все равно возвращается"),
     ]
 
     for query, hint in queries:
