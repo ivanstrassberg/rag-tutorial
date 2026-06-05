@@ -117,8 +117,11 @@ uv run python scripts/build_index.py
 **Релевантный запрос** — «Prime Members tablet movies content»: найдены фрагменты с `doc_id` и `score`, ответ собран из источников.
 ![Релевантный запрос: Prime Members](./positive1.png)
 
-Релевантный запрос: Prime Members
+**Релевантный запрос** — «battery life fire tablet»: найдены фрагменты с `doc_id` и `score`, ответ собран из источников.
+![Релевантный запрос: Battery life](./positive2.png)
+
+**Релевантный запрос** — «great tablet for kids parental controls: найдены фрагменты с `doc_id` и `score`, ответ собран из источников.
+![Релевантный запрос: Tablet for parental control](./positive3.png)
 
 **Negative-запрос** — «quantum physics relativity»: релевантных фрагментов нет, система отказывается отвечать.
 ![Negative-запрос: отказ](./negative1.png)
-Negative-запрос: отказ
