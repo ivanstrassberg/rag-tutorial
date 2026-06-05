@@ -115,9 +115,10 @@ uv run python scripts/build_index.py
 ## Скриншоты
 
 **Релевантный запрос** — «Prime Members tablet movies content»: найдены фрагменты с `doc_id` и `score`, ответ собран из источников.
+![Релевантный запрос: Prime Members](./positive1.png)
 
 Релевантный запрос: Prime Members
 
 **Negative-запрос** — «quantum physics relativity»: релевантных фрагментов нет, система отказывается отвечать.
-
+![Negative-запрос: отказ](./negative1.png)
 Negative-запрос: отказ
